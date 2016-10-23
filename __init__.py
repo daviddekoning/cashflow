@@ -92,3 +92,13 @@ def runCashflows(cashflows, startDate, duration, stream):
             if amount != 0:
                 stream.write( str(amount) )
         stream.write("\n")  
+
+# Demonstration code
+if __name__ == "__main__":
+    from datetime import date
+    c = []
+    c.append( IntervalCashflow( "Payday", date(2016,10,21), 14, 1000) )
+    c.append( MonthlyCashflow("Rent", 1, -600) )
+    
+    with open("demo.csv", 'w') as f:
+        runCashflows(c, date(2016,10,21),180, f)
