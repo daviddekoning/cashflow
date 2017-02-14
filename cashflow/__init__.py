@@ -1,4 +1,6 @@
 from datetime import timedelta
+import numpy as np
+import pandas as pd
 
 class Cashflow:
     def __init__(self,name):
@@ -91,7 +93,21 @@ def runCashflows(cashflows, startDate, duration, stream):
             amount = c.flow( d );
             if amount != 0:
                 stream.write( str(amount) )
-        stream.write("\n")  
+        stream.write("\n")
+
+def flow(cashflows, date):
+    total = 0
+    for c in cashflows:
+        total += c.flow(date)
+    return total
+
+def sumCashflows(cashflows, startDate, duration, startingBalance):
+    df = pd.DataFrame(index=[t.to_datetime().date() for t in pd.date_range(startDate,periods=duration)])    
+    df['total'] = [ flow(cashflows, i) for i in df.index]
+    df['Balance'] = df.cumsum().add(startingBalance)
+    df['min forward'] = [df['Balance'][i:].min() for i in df.index]
+    return df
+    
 
 # Demonstration code
 if __name__ == "__main__":
