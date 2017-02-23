@@ -28,6 +28,32 @@ class IntervalCashflow(Cashflow):
         else:
             return 0
 
+class Limited(Cashflow):
+    
+    def __init__(self, cashflow, startDate, maximum):
+        self.flows = {}
+        sum = 0
+        d = startDate
+        maximum = abs(maximum)
+        done = False
+        while not done:
+            f = cashflow.flow(d)
+            if abs(f) > 0.01:
+                if abs(sum+f) < maximum:
+                    self.flows[d] = f
+                else:
+                    self.flows[d] = np.sign(sum+f)*maximum - sum
+                    done = True
+                sum += f
+            d = d + timedelta(days=1)
+
+    def flow(self, date):
+        if date in self.flows:
+            return self.flows[date]
+        else:
+            return 0
+    
+
 class StartOn(Cashflow):
     def __init__(self, date, cashflow):
         self.start_date = date
