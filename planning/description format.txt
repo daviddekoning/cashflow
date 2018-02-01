@@ -1,0 +1,3 @@
+Pay:
+    "2017 pay", $2000, every Friday starting on January 18th, 2017 ending Dec 31, 2017
+
