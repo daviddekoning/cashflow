@@ -128,7 +128,7 @@ def flow(cashflows, date):
     return total
 
 def sumCashflows(cashflows, startDate, duration, startingBalance):
-    df = pd.DataFrame(index=[t.to_datetime().date() for t in pd.date_range(startDate,periods=duration)])    
+    df = pd.DataFrame(index=[t.to_pydatetime().date() for t in pd.date_range(startDate,periods=duration)])    
     df['total'] = [ flow(cashflows, i) for i in df.index]
     df['Balance'] = df.cumsum().add(startingBalance)
     df['min forward'] = [df['Balance'][i:].min() for i in df.index]
