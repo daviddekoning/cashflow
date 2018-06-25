@@ -104,7 +104,7 @@ class CompositeCashflow(Cashflow):
         
         return sum
 
-def runCashflows(cashflows, startDate, duration, stream):
+def run_cashflows(cashflows, startDate, duration, stream):
     stream.write("Date")
     for c in cashflows:
         stream.write("," + c.name)
@@ -127,13 +127,12 @@ def flow(cashflows, date):
         total += c.flow(date)
     return total
 
-def sumCashflows(cashflows, startDate, duration, startingBalance):
-    df = pd.DataFrame(index=[t.to_datetime().date() for t in pd.date_range(startDate,periods=duration)])    
+def sum_cashflows(cashflows, start_date, duration, starting_balance):
+    df = pd.DataFrame(index=[t.to_pydatetime().date() for t in pd.date_range(start_date,periods=duration)])
     df['total'] = [ flow(cashflows, i) for i in df.index]
-    df['Balance'] = df.cumsum().add(startingBalance)
-    df['min forward'] = [df['Balance'][i:].min() for i in df.index]
+    df['balance'] = df.cumsum().add(starting_balance)
+    df['min_forward'] = [df['balance'][i:].min() for i in df.index]
     return df
-    
 
 # Demonstration code
 if __name__ == "__main__":
