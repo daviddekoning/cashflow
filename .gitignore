@@ -3,3 +3,6 @@ __pycache__
 .DS_Store
 *.csv
 .idea/
+build/
+*.egg
+*.egg-info
