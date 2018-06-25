@@ -7,22 +7,15 @@ class Cashflow:
         self.name = name
     
 class IntervalCashflow(Cashflow):
-    def __init__(self, name, start_date, interval_days, amount, end_date = None):
+    def __init__(self, name, start_date, interval_days, amount):
         super().__init__(name)
         self.start_date = start_date
         self.interval_days = interval_days
         self.amount = amount
-        if end_date is None:
-            self.ends = False
-        self.end_date = end_date
-    
+
     def flow(self,date):
         delta = date - self.start_date
 
-        if self.end_date is not None:
-            if (self.end_date - date).days < 0:
-                return 0
-        
         if delta.days >= 0 and (delta.days % self.interval_days ) == 0:
             return self.amount
         else:
@@ -63,7 +56,18 @@ class StartOn(Cashflow):
         if (date - self.start_date).days >= 0:
             return self.cashflow.flow(date)
         else:
-            return 0   
+            return 0
+
+class EndOn(Cashflow):
+    def __init__(self, date, cashflow):
+        self.end_date = date
+        self.cashflow = cashflow
+
+    def flow(self, date):
+        if date <= self.end_date:
+            return self.cashflow.flow(date)
+        else:
+            return 0
 
 class MonthlyCashflow(Cashflow):
     def __init__(self, name, day_of_month, amount, months=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]):
