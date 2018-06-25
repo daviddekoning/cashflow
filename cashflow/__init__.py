@@ -2,6 +2,8 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
+__version__ = '1.1'
+
 class Cashflow:
     def __init__(self,name):
         self.name = name
@@ -53,7 +55,7 @@ class StartOn(Cashflow):
         self.cashflow = cashflow
     
     def flow(self, date):
-        if (date - self.start_date).days >= 0:
+        if date >= self.start_date:
             return self.cashflow.flow(date)
         else:
             return 0
