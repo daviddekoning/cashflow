@@ -129,8 +129,24 @@ def flow(cashflows, date):
 
 def sum_cashflows(cashflows, start_date, duration, starting_balance):
     df = pd.DataFrame(index=[t.to_pydatetime().date() for t in pd.date_range(start_date,periods=duration)])
+    for c in cashflows:
+        df[c.name] = [flow([c], i) for i in df.index]
+
+    labels = []
+    for index, row in df.iterrows():
+        label = []
+        for i, v in row.iteritems():
+            if v != 0.0:
+                label.append("{}: {}".format(i,v))
+        if len(labels) == 0:
+            labels.append("")
+        else:
+            labels.append(", ".join(label))
+
+    df['labels'] = labels
+
     df['total'] = [ flow(cashflows, i) for i in df.index]
-    df['balance'] = df.cumsum().add(starting_balance)
+    df['balance'] = df['total'].cumsum().add(starting_balance)
     df['min_forward'] = [df['balance'][i:].min() for i in df.index]
     return df
 
