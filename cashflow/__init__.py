@@ -2,27 +2,22 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
+__version__ = '1.1'
+
 class Cashflow:
     def __init__(self,name):
         self.name = name
     
 class IntervalCashflow(Cashflow):
-    def __init__(self, name, start_date, interval_days, amount, end_date = None):
+    def __init__(self, name, start_date, interval_days, amount):
         super().__init__(name)
         self.start_date = start_date
         self.interval_days = interval_days
         self.amount = amount
-        if end_date is None:
-            self.ends = False
-        self.end_date = end_date
-    
+
     def flow(self,date):
         delta = date - self.start_date
 
-        if self.end_date is not None:
-            if (self.end_date - date).days < 0:
-                return 0
-        
         if delta.days >= 0 and (delta.days % self.interval_days ) == 0:
             return self.amount
         else:
@@ -60,10 +55,21 @@ class StartOn(Cashflow):
         self.cashflow = cashflow
     
     def flow(self, date):
-        if (date - self.start_date).days >= 0:
+        if date >= self.start_date:
             return self.cashflow.flow(date)
         else:
-            return 0   
+            return 0
+
+class EndOn(Cashflow):
+    def __init__(self, date, cashflow):
+        self.end_date = date
+        self.cashflow = cashflow
+
+    def flow(self, date):
+        if date <= self.end_date:
+            return self.cashflow.flow(date)
+        else:
+            return 0
 
 class MonthlyCashflow(Cashflow):
     def __init__(self, name, day_of_month, amount, months=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]):
@@ -104,7 +110,7 @@ class CompositeCashflow(Cashflow):
         
         return sum
 
-def runCashflows(cashflows, startDate, duration, stream):
+def run_cashflows(cashflows, startDate, duration, stream):
     stream.write("Date")
     for c in cashflows:
         stream.write("," + c.name)
@@ -127,13 +133,28 @@ def flow(cashflows, date):
         total += c.flow(date)
     return total
 
-def sumCashflows(cashflows, startDate, duration, startingBalance):
-    df = pd.DataFrame(index=[t.to_pydatetime().date() for t in pd.date_range(startDate,periods=duration)])    
-    df['total'] = [ flow(cashflows, i) for i in df.index]
-    df['Balance'] = df.cumsum().add(startingBalance)
-    df['min forward'] = [df['Balance'][i:].min() for i in df.index]
-    return df
+def sum_cashflows(cashflows, start_date, duration, starting_balance):
+    df = pd.DataFrame(index=[t.to_pydatetime().date() for t in pd.date_range(start_date,periods=duration)])
+    for c in cashflows:
+        df[c.name] = [flow([c], i) for i in df.index]
+
+    labels = []
+    for index, row in df.iterrows():
+        label = []
+        for i, v in row.iteritems():
+            if v != 0.0:
+                label.append("{}: {}".format(i,v))
+        if len(labels) == 0:
+            labels.append("")
+        else:
+            labels.append(", ".join(label))
+
+    df['labels'] = labels
     
+    df['total'] = [ flow(cashflows, i) for i in df.index]
+    df['balance'] = df['total'].cumsum().add(starting_balance)
+    df['min_forward'] = [df['balance'][i:].min() for i in df.index]
+    return df
 
 # Demonstration code
 if __name__ == "__main__":

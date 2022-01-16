@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='cashflow',
-      version='1.0',
+      version='1.1',
       description='Python library to generate future cashflows for budgeting.',
-      url='https://github.com/daviddekoning/cashflow',
+      url='https://gitlab.com/ddkto/cashflow',
       author='David de Koning',
+      author_email='david.dekoning@gmail.com',
       license='MIT',
-      packages=['cashflow'],
+      packages=find_packages(),
+      install_requires=['pandas','numpy'],
       zip_safe=False)
