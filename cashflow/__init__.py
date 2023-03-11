@@ -1,6 +1,7 @@
 from datetime import timedelta
 import numpy as np
 import pandas as pd
+from sqlite3 import Connection, Cursor, OperationalError
 
 __version__ = '1.1'
 
@@ -156,6 +157,30 @@ def sum_cashflows(cashflows, start_date, duration, starting_balance):
     df['min_forward'] = [df['balance'][i:].min() for i in df.index]
     return df
 
+def store_projection(projection: pd.DataFrame, conn: Connection, projection_name: str = "working"):
+    curr = connection.cursor()
+    if projection_name != "working":
+        #check if the projection already exists.
+        try:
+            existing_name = curr.execute("SELECT name FROM projections WHERE name = ? LIMIT 1", (projection_name,) ).fetchone()
+        except OperationalError:
+            raise
+        if len(existing_name) > 0:
+            raise ValueError(f"The project {projection_name} already exists. Please choose a different name.")
+    else:
+        # if we are working with teh 
+        curr.execute("DELETE FROM projectsion WHERE name = working")
+    # add projection info to the tables
+    curr.execute("CREATE TABLE IF NOT EXISTS projects (timestamp TEXT, name TEXT PRIMARY KEY)")
+    result = curr.execute("INSERT INTO projections VALUES (?,?)", (now(), "projection_name"))
+    conn.commit()
+    
+    projection['name'] = projection_name
+    rows_added = projection.to_sql('projection_data', conn, if_exists='append', index=True, index_label="Date")
+    
+    conn.commit()
+    conn.close()
+        
 # Demonstration code
 if __name__ == "__main__":
     from datetime import date
