@@ -1,0 +1,772 @@
+[
+{
+ "name": "Pay",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Arup Pay 2022",
+    "start": "2022-01-01",
+    "end": "2022-12-31",
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": 3317.94
+    }
+   },
+   {
+    "name": "EI 2022",
+    "start": "2022-01-01",
+    "end": "2022-12-31",
+    "limit": 952.74,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -66.05
+    }
+   },
+   {
+    "name": "QPIP 2022",
+    "start": "2022-01-01",
+    "end": "2022-12-31",
+    "limit": 434.72,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -27.19
+    }
+   },
+   {
+    "name": "QPP 2022",
+    "start": "2020-01-01",
+    "end": "2021-12-31",
+    "limit": 3776.10,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -371.07
+    }
+   },
+   {
+    "name": "Arup Pay 2023",
+    "start": "2023-01-01",
+    "end": "2023-12-31",
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": 3317.94
+    }
+   },
+   {
+    "name": "EI 2023",
+    "start": "2023-01-01",
+    "end": "2023-12-31",
+    "limit": 952.74,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -66.05
+    }
+   },
+   {
+    "name": "QPIP 2023",
+    "start": "2023-01-01",
+    "end": "2023-12-31",
+    "limit": 434.72,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -27.19
+    }
+   },
+   {
+    "name": "QPP 2023",
+    "start": "2023-01-01",
+    "end": "2023-12-31",
+    "limit": 3776.10,
+    "details": {
+     "type": "interval",
+     "first_date": "2019-01-11",
+     "interval": 14,
+     "amount": -371.07
+    }
+   },
+   {
+    "name": "Arup Profit Share",
+    "details": {
+     "type": "monthly",
+     "day": 15,
+     "amount": 7500,
+     "months": [ 6, 11 ]
+    }
+   },
+   {
+    "name": "Tax Return",
+    "details": {
+     "type": "monthly",
+     "day": 3,
+     "amount": 878.93,
+     "months": [ 6 ]
+    }
+   },
+   {
+    "name": "Elizabeth's pay",
+    "start": "2022-08-28",
+    "details": {
+     "type": "interval",
+     "first_date": "2022-01-13",
+     "interval": 14,
+     "amount": 1200
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Child Benefit",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Child Benefit",
+    "details": {
+     "type": "monthly",
+     "day": 20,
+     "amount": 350,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   },
+   {
+    "name": "Quebec benefit",
+    "details": {
+     "type": "monthly",
+     "day": 5,
+     "amount": 930,
+     "months": [
+      1,
+      4,
+      7,
+      10
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "RESP",
+ "details": {
+  "type": "monthly",
+  "day": 1,
+  "amount": -300,
+  "months": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ]
+ }
+},
+{
+ "name": "Giving",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "E tithe",
+    "details": {
+     "type": "interval",
+     "first_date": "2022-01-13",
+     "interval": 7,
+     "amount": -120
+    }
+   },
+   {
+    "name": "2023 giving",
+    "start": "2023-01-01",
+    "end": "2023-12-31",
+    "details": {
+     "type": "composite",
+     "cashflows": [
+      {
+       "name": "Tithe - Pay 2023",
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": -331
+       }
+      },
+      {
+       "name": "Tithe - EI 2023",
+       "start": "2023-01-01",
+       "limit": 95.27,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 6.61
+       }
+      },
+      {
+       "name": "Tithe - QPIP 2023",
+       "start": "2023-01-01",
+       "limit": 43.47,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 2.72
+       }
+      },
+      {
+       "name": "Tithe - QPP 2023",
+       "start": "2023-01-01",
+       "limit": 377.61,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 37.12
+       }
+      }
+     ]
+    }
+   },
+   {
+    "name": "2022 giving",
+    "start": "2022-01-01",
+    "end": "2022-12-31",
+    "details": {
+     "type": "composite",
+     "cashflows": [
+      {
+       "name": "Tithe - Pay 2022",
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": -331
+       }
+      },
+      {
+       "name": "Tithe - EI 2022",
+       "start": "2022-01-01",
+       "limit": 95.27,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 6.61
+       }
+      },
+      {
+       "name": "Tithe - QPIP 2022",
+       "start": "2022-01-01",
+       "limit": 43.47,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 2.72
+       }
+      },
+      {
+       "name": "Tithe - QPP 2022",
+       "start": "2022-01-01",
+       "limit": 377.61,
+       "details": {
+        "type": "interval",
+        "first_date": "2019-01-12",
+        "interval": 14,
+        "amount": 37.12
+       }
+      }
+     ]
+    }
+   },
+   {
+    "name": "Nico & Molly",
+    "details": {
+     "type": "monthly",
+     "day": 11,
+     "amount": -400,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Mortgage and Rent",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Mortgage",
+    "details": {
+     "type": "interval",
+     "first_date": "2016-08-15",
+     "interval": 14,
+     "amount": -1400
+    }
+   },
+   {
+    "name": "Rent",
+    "start": "2022-07-01",
+    "end": "2023-06-30",
+    "details": {
+     "type": "monthly",
+     "day": 1,
+     "amount": 1403,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Maintenance",
+ "details": {
+  "type": "monthly",
+  "day": 1,
+  "amount": -450,
+  "months": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ]
+ }
+},
+{
+ "name": "Hydro",
+ "details": {
+  "type": "monthly",
+  "day": 7,
+  "amount": -600,
+  "months": [
+   3
+  ]
+ }
+},
+{
+ "name": "Hydro",
+ "details": {
+  "type": "monthly",
+  "day": 7,
+  "amount": -385,
+  "months": [
+   5,
+   1
+  ]
+ }
+},
+{
+ "name": "Hydro",
+ "details": {
+  "type": "monthly",
+  "day": 7,
+  "amount": -250,
+  "months": [
+   7,
+   9,
+   11
+  ]
+ }
+},
+{
+ "name": "House Costs",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "School Tax",
+    "details": {
+     "type": "monthly",
+     "day": 20,
+     "amount": -360,
+     "months": [
+      7,
+      10
+     ]
+    }
+   },
+   {
+    "name": "Municipal Tax",
+    "details": {
+     "type": "monthly",
+     "day": 15,
+     "amount": -2182.5,
+     "months": [
+      2,
+      5
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Insurance",
+ "details": {
+  "type": "monthly",
+  "day": 1,
+  "amount": -212.62,
+  "months": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ]
+ }
+},
+{
+ "name": "Teksavvy",
+ "details": {
+  "type": "monthly",
+  "day": 7,
+  "amount": -80,
+  "months": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ]
+ }
+},
+{
+ "name": "Koodo",
+ "details": {
+  "type": "monthly",
+  "day": 23,
+  "amount": -40.77,
+  "months": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ]
+ }
+},
+{
+ "name": "Kid's Activities",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Swimming",
+    "details": {
+     "type": "monthly",
+     "day": 10,
+     "amount": -245,
+     "months": [
+      1,
+      4,
+      9
+     ]
+    }
+   },
+   {
+    "name": "Petites Voix",
+    "details": {
+     "type": "monthly",
+     "day": 18,
+     "amount": -900,
+     "months": [
+      9
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Secondary School",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Tuition",
+    "start": "2022-09-01",
+    "end": "2023-06-30",
+    "details": {
+     "type": "monthly",
+     "day": 15,
+     "amount": -552,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "E's",
+ "details": {
+  "type": "interval",
+  "first_date": "2016-01-30",
+  "interval": 7,
+  "amount": -360
+ }
+},
+{
+ "name": "D's",
+ "details": {
+  "type": "interval",
+  "first_date": "2016-01-30",
+  "interval": 7,
+  "amount": -40
+ }
+},
+{
+ "name": "Extra food",
+ "details": {
+  "type": "interval",
+  "first_date": "2016-01-30",
+  "interval": 7,
+  "amount": -100
+ }
+},
+{
+ "name": "Service de Garde 22-23",
+ "start": "2022-08-23",
+ "end": "2023-06-30",
+ "details": {
+  "type": "interval",
+  "first_date": "2017-09-11",
+  "interval": 7,
+  "amount": -45
+ }
+},
+{
+ "name": "STM costs",
+ "details": {
+  "type": "composite",
+  "cashflows": []
+ }
+},
+{
+ "name": "Vacation",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Christmas!!",
+    "details": {
+     "type": "monthly",
+     "day": 20,
+     "amount": -2500,
+     "months": [
+      12
+     ]
+    }
+   }
+  ]
+ }
+},
+{
+ "name": "Subscriptions",
+ "details": {
+  "type": "composite",
+  "cashflows": [
+   {
+    "name": "Apple TV+  & Music & britbox & applecare+",
+    "start": "2022-05-14",
+    "details": {
+     "type": "monthly",
+     "day": 16,
+     "amount": -40.20,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   },
+   {
+    "name": "Netflix",
+    "details": {
+     "type": "monthly",
+     "day": 11,
+     "amount": -19,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   },
+   {
+    "name": "Disney Plus",
+    "details": {
+     "type": "monthly",
+     "day": 11,
+     "amount": -14,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   },
+   {
+    "name": "`Economist`",
+    "details": {
+     "type": "monthly",
+     "day": 28,
+     "amount": -100,
+     "months": [
+      3,
+      6,
+      9,
+      12
+     ]
+    }
+   },
+   {
+    "name": "Zwift",
+    "details": {
+     "type": "monthly",
+     "day": 28,
+     "amount": -19.99,
+     "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+     ]
+    }
+   }
+  ]
+ }
+}
+]
