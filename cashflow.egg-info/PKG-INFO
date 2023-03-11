@@ -1,11 +1,10 @@
 Metadata-Version: 1.0
 Name: cashflow
-Version: 1.0
+Version: 1.1
 Summary: Python library to generate future cashflows for budgeting.
-Home-page: https://github.com/daviddekoning/cashflow
+Home-page: https://gitlab.com/ddkto/cashflow
 Author: David de Koning
-Author-email: UNKNOWN
+Author-email: david.dekoning@gmail.com
 License: MIT
-Description-Content-Type: UNKNOWN
 Description: UNKNOWN
 Platform: UNKNOWN

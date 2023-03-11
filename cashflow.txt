@@ -1,0 +1,72 @@
+Pay (
+    Arup Pay 2022: 3317.94 every 14 days counting from 2019-01-11 starting on 2022-01-01 ending on 2022-12-31
+    EI 2022: -66.05 every 14 days counting from 2019-01-11 starting on 2022-01-01 ending on 2022-12-31 maximum 952.74
+    QPIP 2022: -27.19 every 14 days counting from 2019-01-11 starting on 2022-01-01 ending on 2022-12-31 maximum 434.72
+    QPP 2022: -371.07 every 14 days counting from 2019-01-11 starting on 2020-01-01 ending on 2021-12-31 maximum 3776.1
+    Arup Pay 2023: 3317.94 every 14 days counting from 2019-01-11 starting on 2023-01-01 ending on 2023-12-31
+    EI 2023: -66.05 every 14 days counting from 2019-01-11 starting on 2023-01-01 ending on 2023-12-31 maximum 952.74
+    QPIP 2023: -27.19 every 14 days counting from 2019-01-11 starting on 2023-01-01 ending on 2023-12-31 maximum 434.72
+    QPP 2023: -371.07 every 14 days counting from 2019-01-11 starting on 2023-01-01 ending on 2023-12-31 maximum 3776.1
+    Arup Profit Share: 7500 on day 15 in June, Nov
+    Tax Return: 878.93 on day 3 in June
+    Elizabeth's pay: 1200 every 14 days counting from 2022-01-13 starting on 2022-08-28
+)
+Child Benefit (
+    Child Benefit: 350 on day 20 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+    Quebec benefit: 930 on day 5 in Jan, Apr, July, Oct
+)
+RESP: -300 on day 1 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+Giving (
+    E tithe: -120 every 7 days counting from 2022-01-13
+    2023 giving (
+        Tithe - Pay 2023: -331 every 14 days counting from 2019-01-12
+        Tithe - EI 2023: 6.61 every 14 days counting from 2019-01-12 starting on 2023-01-01 maximum 95.27
+        Tithe - QPIP 2023: 2.72 every 14 days counting from 2019-01-12 starting on 2023-01-01 maximum 43.47
+        Tithe - QPP 2023: 37.12 every 14 days counting from 2019-01-12 starting on 2023-01-01 maximum 377.61
+    )
+    2022 giving (
+        Tithe - Pay 2022: -331 every 14 days counting from 2019-01-12
+        Tithe - EI 2022: 6.61 every 14 days counting from 2019-01-12 starting on 2022-01-01 maximum 95.27
+        Tithe - QPIP 2022: 2.72 every 14 days counting from 2019-01-12 starting on 2022-01-01 maximum 43.47
+        Tithe - QPP 2022: 37.12 every 14 days counting from 2019-01-12 starting on 2022-01-01 maximum 377.61
+    )
+    Nico & Molly: -400 on day 11 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+)
+Mortgage and Rent (
+    Mortgage: -1400 every 14 days counting from 2016-08-15
+    Rent: 1403 on day 1 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec starting on 2022-07-01 ending on 2023-06-30
+)
+Maintenance: -450 on day 1 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+Hydro: -600 on day 7 in Mar
+Hydro: -385 on day 7 in May, Jan
+Hydro: -250 on day 7 in July, Sep, Nov
+House Costs (
+    School Tax: -360 on day 20 in July, Oct
+    Municipal Tax: -2182.5 on day 15 in Feb, May
+)
+Insurance: -212.62 on day 1 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+Teksavvy: -80 on day 7 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+Koodo: -40.77 on day 23 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+Kid's Activities (
+    Swimming: -245 on day 10 in Jan, Apr, Sep
+    Petites Voix: -900 on day 18 in Sep
+)
+Secondary School (
+    Tuition: -552 on day 15 in Jan, Feb, Mar, Apr, May, June, Sep, Oct, Nov, Dec starting on 2022-09-01 ending on 2023-06-30
+)
+E's: -360 every 7 days counting from 2016-01-30
+D's: -40 every 7 days counting from 2016-01-30
+Extra food: -100 every 7 days counting from 2016-01-30
+Service de Garde 22-23: -45 every 7 days counting from 2017-09-11 starting on 2022-08-23 ending on 2023-06-30
+STM costs (
+)
+Vacation (
+    Christmas!!: -2500 on day 20 in Dec
+)
+Subscriptions (
+    Apple TV+  & Music & britbox & applecare+: -40.2 on day 16 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec starting on 2022-05-14
+    Netflix: -19 on day 11 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+    Disney Plus: -14 on day 11 in Jan, Feb, Mar, Apr, May, June, July, Aug, Sep, Oct, Nov, Dec
+    `Economist`: -100 on day 28 in Mar, June, Sep, Dec
+    Zwift: -19.99 on day 28 in Jan, Feb, Mar, Apr, May, Sep, Oct, Nov, Dec
+)
