@@ -1,9 +1,10 @@
 from datetime import timedelta, datetime as dt
 import numpy as np
 import pandas as pd
-from sqlite3 import Connection, Cursor, OperationalError
+from sqlite3 import Connection, OperationalError
 from json import loads, JSONEncoder
-from datetime import datetime
+from datetime import datetime, date
+import os
 
 __version__ = "1.2"
 
@@ -16,9 +17,9 @@ def _to_string(date):
     return dt.strftime(date, "%Y-%m-%d")
 
 
-def CashflowEncoder(JSONEncoder):
-    def default(o):
-        if is_instance(o, Cashflow):
+class CashflowEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Cashflow):
             return o.to_dict()
         else:
             return super().default(o)
@@ -312,10 +313,10 @@ def sum_cashflows(cashflows, start_date, duration, starting_balance):
     labels = []
     for index, row in df.iterrows():
         label = []
-        for i, v in row.iteritems():
+        for i, v in row.items():
             if v != 0.0:
                 label.append("{}: {}".format(i, v))
-        if len(labels) == 0:
+        if len(label) == 0:
             labels.append("")
         else:
             labels.append(", ".join(label))
@@ -352,15 +353,13 @@ def store_projection(
         # if we are working with teh
         curr.execute('''DELETE FROM projections WHERE name = "working"''')
     # add projection info to the tables
-    result = curr.execute(
+    curr.execute(
         "INSERT INTO projections VALUES (?,?)", (datetime.now(), projection_name)
     )
     conn.commit()
 
     projection["name"] = projection_name
-    rows_added = projection[
-        ["name", "total", "balance", "min_forward", "labels"]
-    ].to_sql(
+    projection[["name", "total", "balance", "min_forward", "labels"]].to_sql(
         "projection_data", conn, if_exists="append", index=True, index_label="Date"
     )
 
@@ -377,13 +376,17 @@ def get_projection(conn: Connection, projection_name: str = "working"):
     )
 
 
-# Demonstration code
-if __name__ == "__main__":
-    from datetime import date
-
+def main():
     c = []
     c.append(IntervalCashflow("Payday", date(2016, 10, 21), 14, 1000))
     c.append(MonthlyCashflow("Rent", 1, -600))
 
     with open("demo.csv", "w") as f:
-        runCashflows(c, date(2016, 10, 21), 180, f)
+        run_cashflows(c, date(2016, 10, 21), 180, f)
+    if os.path.exists("demo.csv"):
+        os.remove("demo.csv")
+
+
+# Demonstration code
+if __name__ == "__main__":
+    main()
