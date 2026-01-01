@@ -1,9 +1,10 @@
-*.pyc
-__pycache__
-.DS_Store
 *.csv
-.idea/
-build/
 *.egg
 *.egg-info
+*.pyc
+.DS_Store
 .coverage
+*.db
+.idea/
+__pycache__
+build/
