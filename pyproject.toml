@@ -1,0 +1,25 @@
+[project]
+name = "cashflow"
+version = "1.2"
+description = "Python library to generate future cashflows for budgeting."
+authors = [
+    { name = "David de Koning", email = "david.dekoning@gmail.com" }
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas",
+    "numpy",
+    "lark-parser"
+]
+
+[tool.uv]
+# uv-specific settings can go here
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["cashflow"]
