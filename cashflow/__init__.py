@@ -5,6 +5,7 @@ from sqlite3 import Connection, OperationalError
 from json import loads, JSONEncoder
 from datetime import datetime, date
 import os
+from functools import lru_cache
 
 __version__ = "1.2"
 
@@ -67,6 +68,15 @@ class Cashflow:
             cf = CompositeCashflow(data["name"])
             for flow in data["details"]["cashflows"]:
                 cf.add(Cashflow.from_dict(flow))
+        elif cf_type == "salary":
+            cf = SalaryCashflow(
+                data["name"],
+                _to_date(data["details"]["starting_date"]),
+                data["details"]["gross_salary"],
+                data["details"]["estimated_raise"],
+                data["details"]["constant_deductions"],
+                data["details"]["variable_deductions"],
+            )
         else:
             raise ValueError(
                 f"{data['details']['type']} is not a supported cashflow type"
@@ -275,6 +285,106 @@ class CompositeCashflow(Cashflow):
         return sum
 
 
+class SalaryCashflow(Cashflow):
+    def __init__(
+        self,
+        name,
+        starting_date,
+        gross_salary,
+        estimated_raise,
+        constant_deductions,
+        variable_deductions,
+    ):
+        super().__init__(name)
+        self.starting_date = starting_date
+        self.gross_salary = gross_salary
+        self.estimated_raise = estimated_raise
+        self.constant_deductions = constant_deductions
+        self.variable_deductions = variable_deductions
+
+    def _num_raises(self, d):
+        rm = self.estimated_raise["Month"]
+        # First raise occurs in RM of starting_date's year if starting_date.month < RM
+        # otherwise in RM of (starting_date's year + 1).
+        first_raise_year = self.starting_date.year + (
+            0 if self.starting_date.month < rm else 1
+        )
+        first_raise_date = date(first_raise_year, rm, 1)
+
+        if d < first_raise_date:
+            return 0
+
+        # Total full years since the first raise date plus current year raise if applicable
+        years_passed = d.year - first_raise_year
+        return years_passed + (1 if d.month >= rm else 0)
+
+    @lru_cache(maxsize=12)
+    def _get_cashflows(self, year):
+        start_of_year = date(year, 1, 1)
+        end_of_year = date(year, 12, 31)
+
+        # 1. Establish paydays for the year
+        paydays = []
+        days_diff = (start_of_year - self.starting_date).days
+        if days_diff <= 0:
+            current_payday = self.starting_date
+        else:
+            num_intervals = (days_diff + 13) // 14
+            current_payday = self.starting_date + timedelta(days=num_intervals * 14)
+
+        while current_payday <= end_of_year:
+            if current_payday >= self.starting_date:
+                paydays.append(current_payday)
+            current_payday += timedelta(days=14)
+
+        # 2. Build the result dataframe
+        df = pd.DataFrame(
+            index=pd.date_range(start_of_year, end_of_year), columns=["total"]
+        )
+        df["total"] = 0.0
+
+        # Track annual caps for variable deductions
+        cap_remaining = {v["name"]: v["cap"] for v in self.variable_deductions}
+
+        for p in paydays:
+            num_raises = self._num_raises(p)
+            gross = self.gross_salary * (
+                (1 + self.estimated_raise["raise"]) ** num_raises
+            )
+
+            payday_net = gross - self.constant_deductions
+            for v in self.variable_deductions:
+                raw_deduction = gross * v["amount"]
+                actual_deduction = min(raw_deduction, cap_remaining[v["name"]])
+                payday_net -= actual_deduction
+                cap_remaining[v["name"]] -= actual_deduction
+
+            df.at[pd.Timestamp(p), "total"] = payday_net
+
+        return df
+
+    def flow(self, date):
+        df = self._get_cashflows(date.year)
+        # pandas index uses Timestamp
+        ts = pd.Timestamp(date)
+        if ts in df.index:
+            return df.at[ts, "total"]
+        return 0.0
+
+    def to_dict(self, d=None):
+        if d is None:
+            d = super().to_dict()
+        if "details" not in d:
+            d["details"] = {}
+        d["details"]["type"] = "salary"
+        d["details"]["starting_date"] = _to_string(self.starting_date)
+        d["details"]["gross_salary"] = self.gross_salary
+        d["details"]["estimated_raise"] = self.estimated_raise
+        d["details"]["constant_deductions"] = self.constant_deductions
+        d["details"]["variable_deductions"] = self.variable_deductions
+        return d
+
+
 def run_cashflows(cashflows, startDate, duration, stream):
     stream.write("Date")
     for c in cashflows:
@@ -354,7 +464,8 @@ def store_projection(
         curr.execute('''DELETE FROM projections WHERE name = "working"''')
     # add projection info to the tables
     curr.execute(
-        "INSERT INTO projections VALUES (?,?)", (datetime.now(), projection_name)
+        "INSERT INTO projections VALUES (?,?)",
+        (datetime.now().isoformat(), projection_name),
     )
     conn.commit()
 

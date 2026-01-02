@@ -5,7 +5,7 @@ from datetime import date
 from json import dumps, loads
 
 import pytest
-from pytest import approx, raises
+from pytest import raises
 
 from cashflow import (
     Cashflow,
@@ -114,7 +114,7 @@ def test_monthly_flow_off_date(monthly_cf):
 
 
 def test_monthly_custom_months_flow():
-    m = MonthlyCashflow("Q", 1, 10, [1, 4])
+    m = MonthlyCashflow(name="Q", day_of_month=1, amount=10, months=[1, 4])
     assert m.flow(date(2023, 2, 1)) == 0
 
 
@@ -145,8 +145,8 @@ def test_composite_flow_on_date(composite_cf):
 
 
 def test_composite_manual_add():
-    comp = CompositeCashflow("M")
-    comp.add(Cashflow("B"))
+    comp = CompositeCashflow(name="M")
+    comp.add(Cashflow(name="B"))
     assert comp.to_dict()["details"]["cashflows"][0]["name"] == "B"
 
 
@@ -198,7 +198,7 @@ def test_from_dict_unknown_type():
 
 
 def test_encoder_serializes_cashflow():
-    cf = Cashflow("T")
+    cf = Cashflow(name="T")
     assert loads(dumps(cf, cls=CashflowEncoder))["name"] == "T"
 
 
@@ -268,35 +268,43 @@ def test_store_projection_raises_on_closed_conn(temp_db_path, onetime_cf):
 
 
 def test_interval_to_dict_direct():
-    icf = IntervalCashflow("I", date(2023, 1, 1), 1, 1)
+    icf = IntervalCashflow(
+        name="I", start_date=date(2023, 1, 1), interval_days=1, amount=1
+    )
     assert icf.to_dict()["details"]["type"] == "interval"
 
 
 def test_monthly_to_dict_direct():
-    mcf = MonthlyCashflow("M", 1, 1)
+    mcf = MonthlyCashflow(name="M", day_of_month=1, amount=1)
     assert mcf.to_dict()["details"]["type"] == "monthly"
 
 
 def test_starton_to_dict_direct():
-    icf = IntervalCashflow("I", date(2023, 1, 1), 1, 1)
-    scf = StartOn(date(2023, 1, 1), icf)
+    icf = IntervalCashflow(
+        name="I", start_date=date(2023, 1, 1), interval_days=1, amount=1
+    )
+    scf = StartOn(date=date(2023, 1, 1), cashflow=icf)
     assert scf.to_dict()["start"] == "2023-01-01"
 
 
 def test_endon_to_dict_direct():
-    icf = IntervalCashflow("I", date(2023, 1, 1), 1, 1)
-    ecf = EndOn(date(2023, 1, 1), icf)
+    icf = IntervalCashflow(
+        name="I", start_date=date(2023, 1, 1), interval_days=1, amount=1
+    )
+    ecf = EndOn(date=date(2023, 1, 1), cashflow=icf)
     assert ecf.to_dict()["end"] == "2023-01-01"
 
 
 def test_limited_to_dict_direct():
-    icf = IntervalCashflow("I", date(2023, 1, 1), 1, 1)
-    lcf = Limited(date(2023, 1, 1), 10, icf)
+    icf = IntervalCashflow(
+        name="I", start_date=date(2023, 1, 1), interval_days=1, amount=1
+    )
+    lcf = Limited(startDate=date(2023, 1, 1), maximum=10, cashflow=icf)
     assert lcf.to_dict()["limit"] == 10
 
 
 def test_composite_to_dict_direct():
-    ccf = CompositeCashflow("C")
+    ccf = CompositeCashflow(name="C")
     assert ccf.to_dict()["details"]["type"] == "composite"
 
 
@@ -304,7 +312,7 @@ def test_composite_to_dict_direct():
 
 
 def test_cashflow_base_to_dict():
-    assert Cashflow("G").to_dict() == {"name": "G"}
+    assert Cashflow(name="G").to_dict() == {"name": "G"}
 
 
 def test_main_execution():

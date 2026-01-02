@@ -12,7 +12,6 @@ dependencies = [
     "pandas",
     "numpy",
     "lark-parser",
-    "ruff>=0.14.10",
 ]
 
 [tool.uv]
@@ -26,6 +25,7 @@ build-backend = "setuptools.build_meta"
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
+    "ruff>=0.14.10",
 ]
 
 [tool.setuptools]
