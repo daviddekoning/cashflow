@@ -77,6 +77,43 @@ class Cashflow:
                 data["details"]["constant_deductions"],
                 data["details"]["variable_deductions"],
             )
+        elif cf_type == "qc-salary":
+            cf = QCSalary(
+                data["name"],
+                data["details"]["year"],
+                data["details"]["starting_salary"],
+                data["details"]["estimated_raise"],
+                data["details"]["raise_month"],
+                _to_date(data["details"]["first_pay_day"]),
+                data["details"]["constant_deductions"],
+                data["details"]["ei_rate"],
+                data["details"]["ei_cap"],
+                data["details"]["qpip_rate"],
+                data["details"]["qpip_cap"],
+                data["details"]["qpp_rate"],
+                data["details"]["qpp_cap"],
+            )
+        elif cf_type == "qc-multi-year-salary":
+            cf = QCMultiYearSalary(
+                data["name"],
+                data["details"]["year"],
+                data["details"]["ending_year"],
+                data["details"]["starting_salary"],
+                data["details"]["annual_raise"],
+                data["details"]["raise_month"],
+                _to_date(data["details"]["first_pay_day"]),
+                data["details"]["constant_deductions"],
+                data["details"]["ei_rate"],
+                data["details"]["ei_cap"],
+                data["details"]["qpip_rate"],
+                data["details"]["qpip_cap"],
+                data["details"]["qpp_rate"],
+                data["details"]["qpp_cap"],
+                data["details"]["annual_ei_cap_increase"],
+                data["details"]["annual_qpip_cap_increase"],
+                data["details"]["annual_qpp_cap_increase"],
+                data["details"]["annual_constant_deductions_increase"],
+            )
         else:
             raise ValueError(
                 f"{data['details']['type']} is not a supported cashflow type"
@@ -382,6 +419,219 @@ class SalaryCashflow(Cashflow):
         d["details"]["estimated_raise"] = self.estimated_raise
         d["details"]["constant_deductions"] = self.constant_deductions
         d["details"]["variable_deductions"] = self.variable_deductions
+        return d
+
+
+class QCSalary(Cashflow):
+    """Quebec single-year biweekly salary with EI, QPIP, and QPP deductions."""
+
+    def __init__(
+        self,
+        name,
+        year,
+        starting_salary,
+        estimated_raise,
+        raise_month,
+        first_pay_day,
+        constant_deductions,
+        ei_rate,
+        ei_cap,
+        qpip_rate,
+        qpip_cap,
+        qpp_rate,
+        qpp_cap,
+    ):
+        super().__init__(name)
+        self.year = year
+        self.starting_salary = starting_salary
+        self.estimated_raise = estimated_raise
+        self.raise_month = raise_month
+        self.first_pay_day = first_pay_day
+        self.constant_deductions = constant_deductions
+        self.ei_rate = ei_rate
+        self.ei_cap = ei_cap
+        self.qpip_rate = qpip_rate
+        self.qpip_cap = qpip_cap
+        self.qpp_rate = qpp_rate
+        self.qpp_cap = qpp_cap
+
+        self._flows = self._build_flows()
+
+    def _build_flows(self):
+        start_of_year = date(self.year, 1, 1)
+        end_of_year = date(self.year, 12, 31)
+
+        # Find first payday on or after Jan 1 of the year
+        days_diff = (start_of_year - self.first_pay_day).days
+        if days_diff <= 0:
+            current_payday = self.first_pay_day
+        else:
+            num_intervals = (days_diff + 13) // 14
+            current_payday = self.first_pay_day + timedelta(days=num_intervals * 14)
+
+        # Collect all paydays in the year
+        paydays = []
+        while current_payday <= end_of_year:
+            if current_payday >= start_of_year:
+                paydays.append(current_payday)
+            current_payday += timedelta(days=14)
+
+        # Pre-compute net pay for each payday
+        flows = {}
+        ei_remaining = self.ei_cap
+        qpip_remaining = self.qpip_cap
+        qpp_remaining = self.qpp_cap
+
+        for p in paydays:
+            # Apply raise if payday is in or after raise_month
+            if p.month >= self.raise_month:
+                gross = self.starting_salary * (1 + self.estimated_raise)
+            else:
+                gross = self.starting_salary
+
+            net = gross - self.constant_deductions
+
+            # EI deduction
+            ei_raw = gross * self.ei_rate
+            ei_actual = min(ei_raw, ei_remaining)
+            net -= ei_actual
+            ei_remaining -= ei_actual
+
+            # QPIP deduction
+            qpip_raw = gross * self.qpip_rate
+            qpip_actual = min(qpip_raw, qpip_remaining)
+            net -= qpip_actual
+            qpip_remaining -= qpip_actual
+
+            # QPP deduction
+            qpp_raw = gross * self.qpp_rate
+            qpp_actual = min(qpp_raw, qpp_remaining)
+            net -= qpp_actual
+            qpp_remaining -= qpp_actual
+
+            flows[p] = net
+
+        return flows
+
+    def flow(self, date):
+        return self._flows.get(date, 0.0)
+
+    def to_dict(self, d=None):
+        if d is None:
+            d = super().to_dict()
+        if "details" not in d:
+            d["details"] = {}
+        d["details"]["type"] = "qc-salary"
+        d["details"]["year"] = self.year
+        d["details"]["starting_salary"] = self.starting_salary
+        d["details"]["estimated_raise"] = self.estimated_raise
+        d["details"]["raise_month"] = self.raise_month
+        d["details"]["first_pay_day"] = _to_string(self.first_pay_day)
+        d["details"]["constant_deductions"] = self.constant_deductions
+        d["details"]["ei_rate"] = self.ei_rate
+        d["details"]["ei_cap"] = self.ei_cap
+        d["details"]["qpip_rate"] = self.qpip_rate
+        d["details"]["qpip_cap"] = self.qpip_cap
+        d["details"]["qpp_rate"] = self.qpp_rate
+        d["details"]["qpp_cap"] = self.qpp_cap
+        return d
+
+
+class QCMultiYearSalary(Cashflow):
+    """Multi-year Quebec salary that creates a QCSalary per year with annual increases."""
+
+    def __init__(
+        self,
+        name,
+        year,
+        ending_year,
+        starting_salary,
+        annual_raise,
+        raise_month,
+        first_pay_day,
+        constant_deductions,
+        ei_rate,
+        ei_cap,
+        qpip_rate,
+        qpip_cap,
+        qpp_rate,
+        qpp_cap,
+        annual_ei_cap_increase,
+        annual_qpip_cap_increase,
+        annual_qpp_cap_increase,
+        annual_constant_deductions_increase,
+    ):
+        super().__init__(name)
+        self.year = year
+        self.ending_year = ending_year
+        self.starting_salary = starting_salary
+        self.annual_raise = annual_raise
+        self.raise_month = raise_month
+        self.first_pay_day = first_pay_day
+        self.constant_deductions = constant_deductions
+        self.ei_rate = ei_rate
+        self.ei_cap = ei_cap
+        self.qpip_rate = qpip_rate
+        self.qpip_cap = qpip_cap
+        self.qpp_rate = qpp_rate
+        self.qpp_cap = qpp_cap
+        self.annual_ei_cap_increase = annual_ei_cap_increase
+        self.annual_qpip_cap_increase = annual_qpip_cap_increase
+        self.annual_qpp_cap_increase = annual_qpp_cap_increase
+        self.annual_constant_deductions_increase = annual_constant_deductions_increase
+
+        self._salaries = {}
+        for y in range(year, ending_year + 1):
+            n = y - year
+            self._salaries[y] = QCSalary(
+                name=name,
+                year=y,
+                starting_salary=starting_salary * (1 + annual_raise) ** n,
+                estimated_raise=annual_raise,
+                raise_month=raise_month,
+                first_pay_day=first_pay_day,
+                constant_deductions=constant_deductions
+                * (1 + annual_constant_deductions_increase) ** n,
+                ei_rate=ei_rate,
+                ei_cap=ei_cap * (1 + annual_ei_cap_increase) ** n,
+                qpip_rate=qpip_rate,
+                qpip_cap=qpip_cap * (1 + annual_qpip_cap_increase) ** n,
+                qpp_rate=qpp_rate,
+                qpp_cap=qpp_cap * (1 + annual_qpp_cap_increase) ** n,
+            )
+
+    def flow(self, date):
+        if hasattr(date, 'year'):
+            salary = self._salaries.get(date.year)
+            if salary is not None:
+                return salary.flow(date)
+        return 0.0
+
+    def to_dict(self, d=None):
+        if d is None:
+            d = super().to_dict()
+        if "details" not in d:
+            d["details"] = {}
+        d["details"]["type"] = "qc-multi-year-salary"
+        d["details"]["year"] = self.year
+        d["details"]["ending_year"] = self.ending_year
+        d["details"]["starting_salary"] = self.starting_salary
+        d["details"]["annual_raise"] = self.annual_raise
+        d["details"]["raise_month"] = self.raise_month
+        d["details"]["first_pay_day"] = _to_string(self.first_pay_day)
+        d["details"]["constant_deductions"] = self.constant_deductions
+        d["details"]["ei_rate"] = self.ei_rate
+        d["details"]["ei_cap"] = self.ei_cap
+        d["details"]["qpip_rate"] = self.qpip_rate
+        d["details"]["qpip_cap"] = self.qpip_cap
+        d["details"]["qpp_rate"] = self.qpp_rate
+        d["details"]["qpp_cap"] = self.qpp_cap
+        d["details"]["annual_ei_cap_increase"] = self.annual_ei_cap_increase
+        d["details"]["annual_qpip_cap_increase"] = self.annual_qpip_cap_increase
+        d["details"]["annual_qpp_cap_increase"] = self.annual_qpp_cap_increase
+        d["details"]["annual_constant_deductions_increase"] = (
+            self.annual_constant_deductions_increase
+        )
         return d
 
 
