@@ -243,17 +243,17 @@ def test_store_and_get_projection(temp_db_path, onetime_cf):
     conn = sqlite3.connect(temp_db_path)
     df = sum_cashflows([onetime_cf], date(2023, 1, 1), 1, 0)
     store_projection(df, conn, "working")
-    c2 = sqlite3.connect(temp_db_path)
-    assert len(get_projection(c2, "working")) == 1
+    with  sqlite3.connect(temp_db_path) as c2:
+        assert len(get_projection(c2, "working")) == 1
 
 
 def test_store_projection_raises_on_duplicate(temp_db_path, onetime_cf):
     conn = sqlite3.connect(temp_db_path)
     df = sum_cashflows([onetime_cf], date(2023, 1, 1), 1, 0)
     store_projection(df, conn, "my_proj")
-    c2 = sqlite3.connect(temp_db_path)
-    with raises(ValueError, match="exists"):
-        store_projection(df.copy(), c2, "my_proj")
+    with  sqlite3.connect(temp_db_path) as c2:
+        with raises(ValueError, match="exists"):
+            store_projection(df.copy(), c2, "my_proj")
 
 
 def test_store_projection_raises_on_closed_conn(temp_db_path, onetime_cf):
