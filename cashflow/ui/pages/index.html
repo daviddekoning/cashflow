@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cashflow Editor</title>
+<meta name="description" content="Web editor for cashflow JSON files">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--surface:rgba(255,255,255,.04);--surface-hover:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.08);--border-active:rgba(99,179,237,.4);
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;
+  --accent:#63b3ed;--accent2:#a78bfa;--danger:#f87171;--success:#34d399;
+  --glass:rgba(15,20,40,.7);--radius:10px;
+}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:8px 10px;outline:none;transition:border .2s}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:#1a1f35;color:var(--text)}
+
+/* Layout */
+#app{display:grid;grid-template-rows:52px 1fr;grid-template-columns:240px 1fr 340px;height:100vh}
+#topbar{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 16px;
+  background:var(--glass);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);z-index:10}
+#sidebar{grid-row:2;overflow-y:auto;background:var(--glass);border-right:1px solid var(--border);
+  backdrop-filter:blur(20px);padding:12px;display:flex;flex-direction:column;gap:8px}
+#tree-panel{grid-row:2;overflow-y:auto;padding:16px}
+#editor{grid-row:2;overflow-y:auto;background:var(--glass);border-left:1px solid var(--border);
+  backdrop-filter:blur(20px);padding:16px}
+
+/* Topbar */
+#topbar .logo{font-weight:700;font-size:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#topbar .file-name{font-size:13px;color:var(--text-dim);margin-left:4px}
+.unsaved-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:none;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.tb-btn{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;transition:all .2s}
+.tb-btn:hover{background:var(--surface-hover)}
+.tb-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.tb-btn.primary:hover{filter:brightness(1.15)}
+.spacer{flex:1}
+
+/* Sidebar */
+.sidebar-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin:4px 0}
+.file-card{padding:10px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;
+  transition:all .2s;position:relative;display:flex;flex-direction:column;gap:2px}
+.file-card:hover{background:var(--surface-hover);border-color:var(--border-active)}
+.file-card.active{background:rgba(99,179,237,.1);border-color:var(--accent)}
+.file-card .fc-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-card .fc-meta{font-size:11px;color:var(--text-muted)}
+.file-card .fc-actions{position:absolute;top:8px;right:8px;display:flex;gap:4px;
+  opacity:0;transition:opacity .2s}
+.file-card:hover .fc-actions{opacity:1}
+.file-card .fc-actions button{font-size:13px;color:var(--text-muted);padding:1px 3px;border-radius:3px}
+.file-card .fc-actions button:hover{color:var(--text);background:var(--surface-hover)}
+.file-card .fc-actions .fc-del:hover{color:var(--danger)}
+#new-file-row{display:flex;gap:6px}
+#new-file-row input{flex:1;font-size:12px;padding:6px 8px}
+#new-file-row button{padding:6px 10px;border-radius:6px;font-size:18px;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;line-height:1}
+
+/* Tree */
+.tree-node{margin-left:0}
+.tn-header{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;
+  transition:background .15s;font-size:13px}
+.tn-header:hover{background:var(--surface-hover)}
+.tn-header.selected{background:rgba(99,179,237,.12);outline:1px solid var(--border-active)}
+.tn-toggle{width:16px;font-size:10px;color:var(--text-muted);transition:transform .2s;text-align:center;flex-shrink:0}
+.tn-toggle.open{transform:rotate(90deg)}
+.tn-badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.badge-interval{background:rgba(99,179,237,.15);color:#63b3ed}
+.badge-monthly{background:rgba(167,139,250,.15);color:#a78bfa}
+.badge-one-time{background:rgba(52,211,153,.15);color:#34d399}
+.badge-composite{background:rgba(251,191,36,.15);color:#fbbf24}
+.badge-salary{background:rgba(248,113,113,.15);color:#f87171}
+.tn-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tn-amount{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;flex-shrink:0}
+.tn-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.tn-header:hover .tn-actions{opacity:1}
+.tn-actions button{font-size:14px;padding:2px 4px;border-radius:4px;color:var(--text-muted)}
+.tn-actions button:hover{background:var(--surface-hover);color:var(--text)}
+.tn-children{overflow:hidden;padding-left:20px}
+.tree-empty{text-align:center;padding:40px;color:var(--text-muted);font-size:14px}
+#tree-add-root{display:flex;justify-content:center;margin-top:12px}
+#tree-add-root button{padding:6px 16px;border-radius:6px;font-size:12px;border:1px dashed var(--border);
+  color:var(--text-muted);transition:all .2s}
+#tree-add-root button:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Editor */
+.editor-empty{text-align:center;padding:40px;color:var(--text-muted);font-size:14px}
+.editor-title{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--accent)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);
+  font-weight:600;margin-bottom:4px}
+.field input,.field select{width:100%;font-size:13px}
+.months-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.month-btn{padding:6px;border-radius:5px;font-size:11px;font-weight:500;border:1px solid var(--border);
+  text-align:center;transition:all .15s}
+.month-btn:hover{border-color:var(--accent)}
+.month-btn.active{background:rgba(99,179,237,.2);border-color:var(--accent);color:var(--accent)}
+.opt-field{display:flex;gap:4px;align-items:center}
+.opt-field input{flex:1}
+.opt-field .remove-btn{padding:4px 8px;border-radius:4px;font-size:11px;color:var(--text-muted);border:1px solid var(--border);transition:all .15s}
+.opt-field .remove-btn:hover{color:var(--danger);border-color:var(--danger)}
+.add-opt-btn{padding:6px 12px;border-radius:6px;font-size:12px;color:var(--text-muted);border:1px dashed var(--border);transition:all .15s;width:100%}
+.add-opt-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2)}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);
+  padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;
+  background:var(--glass);border:1px solid var(--border);backdrop-filter:blur(20px);
+  transition:transform .3s ease,opacity .3s;opacity:0;z-index:100}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <span class="logo">Cashflow Editor</span>
+    <span class="file-name" id="current-file">No file open</span>
+    <div class="unsaved-dot" id="unsaved-dot"></div>
+    <div class="spacer"></div>
+    <button class="tb-btn" id="btn-reload" onclick="reloadFile()" title="Reload">↻ Reload</button>
+    <button class="tb-btn primary" id="btn-save" onclick="saveFile()" title="Save">Save</button>
+  </div>
+  <div id="sidebar">
+    <div class="sidebar-title">Files</div>
+    <div id="file-list"></div>
+    <div id="new-file-row">
+      <input type="text" id="new-file-name" placeholder="new_file.json" onkeydown="if(event.key==='Enter')createFile()">
+      <button onclick="createFile()" title="Create new file">+</button>
+    </div>
+    <button class="add-opt-btn" onclick="document.getElementById('upload-input').click()">↑ Upload JSON</button>
+    <input type="file" id="upload-input" accept=".json" style="display:none" onchange="uploadFile(this)">
+  </div>
+  <div id="tree-panel">
+    <div id="tree-root"></div>
+    <div id="tree-add-root"><button onclick="addRootCashflow()">+ Add Cashflow</button></div>
+  </div>
+  <div id="editor">
+    <div class="editor-empty" id="editor-placeholder">Select a cashflow to edit</div>
+    <div id="editor-form" style="display:none"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let files = [];
+let currentFileName = null;
+let cashflows = [];
+let selectedPath = null;   // e.g. [0, 2, 1] = cashflows[0].details.cashflows[2].details.cashflows[1]
+let dirty = false;
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TYPE_FIELDS = {
+  'interval': ['amount','first_date','interval'],
+  'monthly': ['amount','day','months'],
+  'one-time': ['amount','date'],
+  'composite': [],
+  'salary': ['starting_date','gross_salary','estimated_raise','constant_deductions','variable_deductions'],
+  'qc-salary': ['year','starting_salary','estimated_raise','raise_month','first_pay_day',
+    'constant_deductions','ei_rate','ei_cap','qpip_rate','qpip_cap','qpp_rate','qpp_cap'],
+  'qc-multi-year-salary': ['year','ending_year','starting_salary','annual_raise','raise_month','first_pay_day',
+    'constant_deductions','ei_rate','ei_cap','qpip_rate','qpip_cap','qpp_rate','qpp_cap',
+    'annual_ei_cap_increase','annual_qpip_cap_increase','annual_qpp_cap_increase','annual_constant_deductions_increase']
+};
+const SIMPLE_TYPES = ['interval','monthly','one-time','composite'];
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function api(url, opts = {}) {
+  const r = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
+  if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.detail || r.statusText); }
+  return r.json();
+}
+
+// ── File sidebar ───────────────────────────────────────────────────────────
+async function loadFiles() {
+  files = await api('/api/files');
+  renderFiles();
+}
+
+function renderFiles() {
+  const el = document.getElementById('file-list');
+  el.innerHTML = files.map(f => {
+    const active = f.name === currentFileName ? ' active' : '';
+    const kb = (f.size / 1024).toFixed(1);
+    const d = new Date(f.modified).toLocaleDateString();
+    return `<div class="file-card${active}" onclick="openFile('${f.name}')">
+      <span class="fc-name">${f.name}</span>
+      <span class="fc-meta">${kb} KB · ${d}</span>
+      <span class="fc-actions">
+        <button onclick="event.stopPropagation();duplicateFile('${f.name}')" title="Duplicate with today's date">⧉</button>
+        <button class="fc-del" onclick="event.stopPropagation();deleteFile('${f.name}')" title="Delete">✕</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+async function openFile(name) {
+  if (dirty && !confirm('Discard unsaved changes?')) return;
+  currentFileName = name;
+  cashflows = await api(`/api/files/${encodeURIComponent(name)}`);
+  selectedPath = null;
+  setDirty(false);
+  document.getElementById('current-file').textContent = name;
+  renderFiles();
+  renderTree();
+  renderEditor();
+}
+
+async function createFile() {
+  const input = document.getElementById('new-file-name');
+  const name = input.value.trim();
+  if (!name) return;
+  try {
+    await api('/api/files', { method: 'POST', body: JSON.stringify({ name }) });
+    input.value = '';
+    await loadFiles();
+    toast('Created ' + name);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function uploadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    // Create file (ignore 409 if it exists and user confirms overwrite)
+    const createResp = await fetch('/api/files', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name: file.name })
+    });
+    if (!createResp.ok && createResp.status === 409) {
+      if (!confirm(`${file.name} already exists. Overwrite?`)) return;
+    } else if (!createResp.ok) {
+      const e = await createResp.json().catch(()=>({}));
+      throw new Error(e.detail || createResp.statusText);
+    }
+    await api(`/api/files/${encodeURIComponent(file.name)}`, { method: 'PUT', body: JSON.stringify(data) });
+    await loadFiles();
+    toast('Uploaded ' + file.name);
+  } catch (e) {
+    toast(e.message || 'Invalid JSON file', true);
+  }
+}
+
+async function deleteFile(name) {
+  if (!confirm(`Delete ${name}?`)) return;
+  try {
+    await api(`/api/files/${encodeURIComponent(name)}`, { method: 'DELETE' });
+    if (currentFileName === name) { currentFileName = null; cashflows = []; selectedPath = null; setDirty(false);
+      document.getElementById('current-file').textContent = 'No file open'; renderTree(); renderEditor(); }
+    await loadFiles();
+    toast('Deleted ' + name);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function duplicateFile(name) {
+  try {
+    const result = await api(`/api/files/${encodeURIComponent(name)}/duplicate`, { method: 'POST' });
+    await loadFiles();
+    toast(`Duplicated → ${result.name}`);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function saveFile() {
+  if (!currentFileName) return;
+  try {
+    await api(`/api/files/${encodeURIComponent(currentFileName)}`, { method: 'PUT', body: JSON.stringify(cashflows) });
+    setDirty(false);
+    await loadFiles();
+    toast('Saved');
+  } catch (e) { toast(e.message, true); }
+}
+
+async function reloadFile() {
+  if (!currentFileName) return;
+  if (dirty && !confirm('Discard unsaved changes?')) return;
+  await openFile(currentFileName);
+  toast('Reloaded');
+}
+
+function setDirty(v) { dirty = v; document.getElementById('unsaved-dot').style.display = v ? 'block' : 'none'; }
+
+// ── Cashflow access helpers ────────────────────────────────────────────────
+function getCF(path) {
+  let node = { details: { cashflows } };
+  for (const i of path) node = node.details.cashflows[i];
+  return node;
+}
+
+function getParentList(path) {
+  if (path.length === 0) return null;
+  if (path.length === 1) return cashflows;
+  return getCF(path.slice(0, -1)).details.cashflows;
+}
+
+// ── Tree ───────────────────────────────────────────────────────────────────
+const collapsed = new Set();
+
+function pathKey(p) { return p.join('-'); }
+
+function renderTree() {
+  const root = document.getElementById('tree-root');
+  if (!currentFileName) { root.innerHTML = '<div class="tree-empty">Open a file to get started</div>'; return; }
+  if (cashflows.length === 0) { root.innerHTML = '<div class="tree-empty">No cashflows yet</div>'; return; }
+  root.innerHTML = cashflows.map((c, i) => renderNode(c, [i])).join('');
+}
+
+function renderNode(cf, path) {
+  const key = pathKey(path);
+  const type = cf.details?.type || '?';
+  const isComp = type === 'composite';
+  const isOpen = !collapsed.has(key);
+  const sel = selectedPath && pathKey(selectedPath) === key ? ' selected' : '';
+  const badgeCls = type.startsWith('qc-') || type === 'salary' ? 'badge-salary' : `badge-${type}`;
+  const amt = cf.details?.amount != null ? `$${cf.details.amount}` : '';
+
+  let children = '';
+  if (isComp && isOpen && cf.details.cashflows?.length) {
+    children = `<div class="tn-children">${cf.details.cashflows.map((c, i) => renderNode(c, [...path, i])).join('')}</div>`;
+  }
+
+  const addBtn = isComp ? `<button onclick="event.stopPropagation();addChild([${path}])" title="Add child">+</button>` : '';
+
+  return `<div class="tree-node">
+    <div class="tn-header${sel}" onclick="selectNode([${path}])">
+      <span class="tn-toggle${isComp ? (isOpen ? ' open' : '') : ''}" onclick="event.stopPropagation();toggleNode([${path}])">${isComp ? '▶' : ''}</span>
+      <span class="tn-badge ${badgeCls}">${type}</span>
+      <span class="tn-name">${cf.name || 'Unnamed'}</span>
+      <span class="tn-amount">${amt}</span>
+      <span class="tn-actions">
+        ${addBtn}
+        <button onclick="event.stopPropagation();deleteCF([${path}])" title="Delete">✕</button>
+      </span>
+    </div>
+    ${children}
+  </div>`;
+}
+
+function toggleNode(path) { const k = pathKey(path); collapsed.has(k) ? collapsed.delete(k) : collapsed.add(k); renderTree(); }
+
+function selectNode(path) { selectedPath = path; renderTree(); renderEditor(); }
+
+function addRootCashflow() {
+  if (!currentFileName) { toast('Open a file first', true); return; }
+  cashflows.push({ name: 'New Cashflow', details: { type: 'monthly', day: 1, amount: 0, months: [1,2,3,4,5,6,7,8,9,10,11,12] } });
+  selectedPath = [cashflows.length - 1];
+  setDirty(true);
+  renderTree();
+  renderEditor();
+}
+
+function addChild(path) {
+  const cf = getCF(path);
+  if (cf.details.type !== 'composite') return;
+  if (!cf.details.cashflows) cf.details.cashflows = [];
+  cf.details.cashflows.push({ name: 'New Cashflow', details: { type: 'monthly', day: 1, amount: 0, months: [1,2,3,4,5,6,7,8,9,10,11,12] } });
+  collapsed.delete(pathKey(path));
+  selectedPath = [...path, cf.details.cashflows.length - 1];
+  setDirty(true);
+  renderTree();
+  renderEditor();
+}
+
+function deleteCF(path) {
+  if (!confirm('Delete this cashflow?')) return;
+  const list = getParentList(path);
+  list.splice(path[path.length - 1], 1);
+  selectedPath = null;
+  setDirty(true);
+  renderTree();
+  renderEditor();
+}
+
+// ── Editor ─────────────────────────────────────────────────────────────────
+function renderEditor() {
+  const placeholder = document.getElementById('editor-placeholder');
+  const form = document.getElementById('editor-form');
+  if (!selectedPath) { placeholder.style.display = ''; form.style.display = 'none'; return; }
+  placeholder.style.display = 'none';
+  form.style.display = '';
+
+  const cf = getCF(selectedPath);
+  const type = cf.details?.type || 'monthly';
+  let html = `<div class="editor-title">Edit Cashflow</div>`;
+
+  // Name
+  html += field('Name', `<input id="ef-name" value="${esc(cf.name || '')}" oninput="updateField('name',this.value)">`);
+
+  // Type
+  html += field('Type', `<select id="ef-type" onchange="changeType(this.value)">
+    ${Object.keys(TYPE_FIELDS).map(t => `<option value="${t}"${t===type?' selected':''}>${t}</option>`).join('')}
+  </select>`);
+
+  // Optional modifiers
+  html += field('Start Date', cf.start != null
+    ? `<div class="opt-field"><input type="date" id="ef-start" value="${cf.start}" oninput="updateMod('start',this.value)"><button class="remove-btn" onclick="clearMod('start')">✕</button></div>`
+    : `<button class="add-opt-btn" onclick="addMod('start')">+ Set start date</button>`);
+  html += field('End Date', cf.end != null
+    ? `<div class="opt-field"><input type="date" id="ef-end" value="${cf.end}" oninput="updateMod('end',this.value)"><button class="remove-btn" onclick="clearMod('end')">✕</button></div>`
+    : `<button class="add-opt-btn" onclick="addMod('end')">+ Set end date</button>`);
+  html += field('Limit', `<input type="number" step="any" id="ef-limit" value="${cf.limit ?? ''}" oninput="updateMod('limit',this.value)">`);
+
+  // Type-specific fields
+  const d = cf.details || {};
+  if (type === 'interval') {
+    html += field('Amount', numInput('ef-amount', d.amount, "updateDetail('amount',this.value)"));
+    html += field('First Date', `<input type="date" id="ef-first-date" value="${d.first_date || ''}" oninput="updateDetail('first_date',this.value)">`);
+    html += field('Interval (days)', numInput('ef-interval', d.interval, "updateDetail('interval',this.value)"));
+  } else if (type === 'monthly') {
+    html += field('Amount', numInput('ef-amount', d.amount, "updateDetail('amount',this.value)"));
+    html += field('Day of Month', numInput('ef-day', d.day, "updateDetail('day',this.value)"));
+    html += field('Months', monthsGrid(d.months || []));
+  } else if (type === 'one-time') {
+    html += field('Amount', numInput('ef-amount', d.amount, "updateDetail('amount',this.value)"));
+    html += field('Date', `<input type="date" id="ef-date" value="${d.date || ''}" oninput="updateDetail('date',this.value)">`);
+  } else if (type === 'composite') {
+    html += `<div class="field"><label>Children: ${(d.cashflows||[]).length}</label></div>`;
+  } else {
+    // salary types — render all fields generically
+    const fields = TYPE_FIELDS[type] || [];
+    for (const f of fields) {
+      const val = d[f];
+      if (typeof val === 'object') {
+        html += field(f, `<input id="ef-${f}" value='${JSON.stringify(val)}' oninput="updateDetailJSON('${f}',this.value)">`);
+      } else {
+        html += field(f, `<input id="ef-${f}" value="${val ?? ''}" oninput="updateDetailAuto('${f}',this.value)">`);
+      }
+    }
+  }
+
+  form.innerHTML = html;
+}
+
+function field(label, inner) { return `<div class="field"><label>${label}</label>${inner}</div>`; }
+function numInput(id, val, handler) { return `<input type="number" step="any" id="${id}" value="${val ?? ''}" oninput="${handler}">`; }
+function esc(s) { return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function monthsGrid(active) {
+  return `<div class="months-grid">${MONTHS.map((m, i) => {
+    const a = active.includes(i + 1) ? ' active' : '';
+    return `<button type="button" class="month-btn${a}" onclick="toggleMonth(${i+1})">${m}</button>`;
+  }).join('')}</div>`;
+}
+
+function updateField(key, val) { const cf = getCF(selectedPath); cf[key] = val; setDirty(true); renderTree(); }
+
+function updateMod(key, val) {
+  const cf = getCF(selectedPath);
+  if (val === '') { delete cf[key]; } else if (key === 'limit') { cf[key] = parseFloat(val); } else { cf[key] = val; }
+  setDirty(true);
+}
+
+function clearMod(key) {
+  const cf = getCF(selectedPath);
+  delete cf[key];
+  setDirty(true);
+  renderEditor();
+}
+
+function addMod(key) {
+  const cf = getCF(selectedPath);
+  const today = new Date().toISOString().slice(0, 10);
+  cf[key] = today;
+  setDirty(true);
+  renderEditor();
+}
+
+function updateDetail(key, val) {
+  const cf = getCF(selectedPath);
+  if (key === 'amount' || key === 'interval' || key === 'day') {
+    cf.details[key] = val === '' ? 0 : parseFloat(val);
+  } else {
+    cf.details[key] = val;
+  }
+  setDirty(true);
+  renderTree();
+}
+
+function updateDetailAuto(key, val) {
+  const cf = getCF(selectedPath);
+  const n = parseFloat(val);
+  cf.details[key] = isNaN(n) ? val : n;
+  setDirty(true);
+}
+
+function updateDetailJSON(key, val) {
+  try { const cf = getCF(selectedPath); cf.details[key] = JSON.parse(val); setDirty(true); } catch(e) {}
+}
+
+function toggleMonth(m) {
+  const cf = getCF(selectedPath);
+  if (!cf.details.months) cf.details.months = [];
+  const idx = cf.details.months.indexOf(m);
+  if (idx >= 0) cf.details.months.splice(idx, 1); else cf.details.months.push(m);
+  cf.details.months.sort((a, b) => a - b);
+  setDirty(true);
+  renderEditor();
+}
+
+function changeType(newType) {
+  const cf = getCF(selectedPath);
+  const oldType = cf.details?.type;
+  if (oldType === newType) return;
+  const name = cf.name;
+  if (newType === 'composite') {
+    cf.details = { type: 'composite', cashflows: [] };
+  } else if (newType === 'monthly') {
+    cf.details = { type: 'monthly', day: 1, amount: 0, months: [1,2,3,4,5,6,7,8,9,10,11,12] };
+  } else if (newType === 'interval') {
+    cf.details = { type: 'interval', first_date: '', interval: 14, amount: 0 };
+  } else if (newType === 'one-time') {
+    cf.details = { type: 'one-time', date: '', amount: 0 };
+  } else {
+    cf.details = { type: newType };
+  }
+  setDirty(true);
+  renderTree();
+  renderEditor();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, err = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = err ? 'var(--danger)' : 'var(--accent)';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveFile(); }
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+loadFiles();
+</script>
+</body>
+</html>
